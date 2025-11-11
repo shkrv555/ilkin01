@@ -422,5 +422,88 @@
             loadMenuData();
         });
     </script>
+    <!-- Mevcut HTML'in sonuna, </body> kapanışından önce ekle -->
+<script>
+// API base URL
+const API_BASE = 'http://localhost:5000/api';
+
+// Projeleri yükle
+async function loadProjects() {
+    try {
+        const response = await fetch(`${API_BASE}/projects`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayProjects(data.projects);
+        }
+    } catch (error) {
+        console.log('Projeler yüklenemedi:', error);
+    }
+}
+
+// Projeleri göster
+function displayProjects(projects) {
+    const projectsContainer = document.getElementById('projects-container');
+    if (!projectsContainer) return;
+    
+    projectsContainer.innerHTML = projects.map(project => `
+        <div class="project-card">
+            <h3>${project.title}</h3>
+            <p>${project.description}</p>
+            <div class="technologies">
+                <strong>Teknolojiler:</strong> ${project.technologies}
+            </div>
+            <div class="project-links">
+                <a href="${project.project_url}" target="_blank">🌐 Live Demo</a>
+                <a href="${project.github_url}" target="_blank">📁 GitHub</a>
+            </div>
+        </div>
+    `).join('');
+}
+
+// İletişim formu
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/contact`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    contactForm.reset();
+                } else {
+                    alert('Hata: ' + result.error);
+                }
+            } catch (error) {
+                alert('Bağlantı hatası: ' + error.message);
+            }
+        });
+    }
+    
+    // Ziyaretçi sayısını takip et
+    fetch(`${API_BASE}/visitors`, { method: 'POST' });
+    
+    // Projeleri yükle
+    loadProjects();
+});
+</script>
 </body>
 </html>
